@@ -676,7 +676,7 @@ checkPackageAndInstall "coreutils-base64" "1"
 checkPackageAndInstall "jq" "1"
 checkPackageAndInstall "curl" "1"
 checkPackageAndInstall "unzip" "1"
-checkPackageAndInstall "zapret" "1"
+checkPackageAndInstall "zapret" "0"
 opkg remove --force-removal-of-dependent-packages "sing-box"
 
 findVersion="1.12.0"
@@ -693,8 +693,8 @@ opkg upgrade amneziawg-tools
 opkg upgrade kmod-amneziawg
 opkg upgrade luci-app-amneziawg
 
-opkg upgrade zapret
-opkg upgrade luci-app-zapret
+#opkg upgrade zapret
+#opkg upgrade luci-app-zapret
 manage_package "zapret" "enable" "start"
 
 #проверяем установлени ли пакет dnsmasq-full
@@ -823,14 +823,14 @@ fi
 
 printf "\033[32;1mCheck work zapret.\033[0m\n"
 #install_youtubeunblock_packages
-opkg upgrade zapret
-opkg upgrade luci-app-zapret
+#opkg upgrade zapret
+#opkg upgrade luci-app-zapret
 manage_package "zapret" "enable" "start"
-wget -O "/etc/config/zapret" "$URL/config_files/zapret"
-wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user.txt"
-wget -O "/opt/zapret/ipset/zapret-hosts-user-exclude.txt" "$URL/config_files/zapret-hosts-user-exclude.txt"
-wget -O "/opt/zapret/init.d/openwrt/custom.d/50-stun4all" "$URL/config_files/50-stun4all"
-chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-stun4all"
+#wget -O "/etc/config/zapret" "$URL/config_files/zapret"
+#wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user.txt"
+#wget -O "/opt/zapret/ipset/zapret-hosts-user-exclude.txt" "$URL/config_files/zapret-hosts-user-exclude.txt"
+#wget -O "/opt/zapret/init.d/openwrt/custom.d/50-stun4all" "$URL/config_files/50-stun4all"
+#chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-stun4all"
 
 manage_package "podkop" "enable" "stop"
 manage_package "youtubeUnblock" "disable" "stop"
@@ -1275,7 +1275,7 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "podkop" "disable" "stop"
 	manage_package "youtubeunblock" "disable" "stop"
-	wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user-second.txt"
+	#wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user.txt"
 	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
 	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
 	service zapret restart
