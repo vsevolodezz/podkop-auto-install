@@ -878,17 +878,7 @@ else
 	fi
 fi
 
-isWorkOperaProxy=0
-printf "\033[32;1mCheck opera proxy...\033[0m\n"
-service sing-box restart
-curl --proxy http://127.0.0.1:18080 ipinfo.io/ip
-if [ $? -eq 0 ]; then
-	printf "\033[32;1mOpera proxy well work...\033[0m\n"
-	isWorkOperaProxy=1
-else
-	printf "\033[32;1mOpera proxy not work...\033[0m\n"
-	isWorkOperaProxy=0
-fi
+
 
 #printf "\033[32;1mAutomatic generate config AmneziaWG WARP (n) or manual input parameters for AmneziaWG (y)...\033[0m\n"
 countRepeatAWGGen=2
@@ -1198,34 +1188,34 @@ then
 	printf "\033[32;1mAWG WARP well work...\033[0m\n"
 	isWorkWARP=1
 else
-	printf "\033[32;1mAWG WARP not work.....Try opera proxy...\033[0m\n"
+	printf "\033[32;1mAWG WARP not work...\033[0m\n"
 	isWorkWARP=0
 fi
 
-echo "isWorkZapret = $isWorkZapret, isWorkOperaProxy = $isWorkOperaProxy, isWorkWARP = $isWorkWARP"
+echo "isWorkZapret = $isWorkZapret, isWorkWARP = $isWorkWARP"
 
-if [ "$isWorkZapret" = "1" ] && [ "$isWorkOperaProxy" = "1" ] && [ "$isWorkWARP" = "1" ] 
+if [ "$isWorkZapret" = "1" ] && [ "$isWorkWARP" = "1" ] 
 then
 	varByPass=1
-elif [ "$isWorkZapret" = "0" ] && [ "$isWorkOperaProxy" = "1" ] && [ "$isWorkWARP" = "1" ] 
+elif [ "$isWorkZapret" = "0" ] && [ "$isWorkWARP" = "1" ] 
 then
 	varByPass=2
-elif [ "$isWorkZapret" = "1" ] && [ "$isWorkOperaProxy" = "1" ] && [ "$isWorkWARP" = "0" ] 
+elif [ "$isWorkZapret" = "1" ] && [ "$isWorkWARP" = "0" ] 
 then
 	varByPass=3
-elif [ "$isWorkZapret" = "0" ] && [ "$isWorkOperaProxy" = "1" ] && [ "$isWorkWARP" = "0" ] 
+elif [ "$isWorkZapret" = "0" ] && [ "$isWorkWARP" = "0" ] 
 then
 	varByPass=4
-elif [ "$isWorkZapret" = "1" ] && [ "$isWorkOperaProxy" = "0" ] && [ "$isWorkWARP" = "0" ] 
+elif [ "$isWorkZapret" = "1" ] && [ "$isWorkWARP" = "0" ] 
 then
 	varByPass=5
-elif [ "$isWorkZapret" = "0" ] && [ "$isWorkOperaProxy" = "0" ] && [ "$isWorkWARP" = "1" ] 
+elif [ "$isWorkZapret" = "0" ] && [ "$isWorkWARP" = "1" ] 
 then
 	varByPass=6
-elif [ "$isWorkZapret" = "1" ] && [ "$isWorkOperaProxy" = "0" ] && [ "$isWorkWARP" = "1" ] 
+elif [ "$isWorkZapret" = "1" ] && [ "$isWorkWARP" = "1" ] 
 then
 	varByPass=7
-elif [ "$isWorkZapret" = "0" ] && [ "$isWorkOperaProxy" = "0" ] && [ "$isWorkWARP" = "0" ] 
+elif [ "$isWorkZapret" = "0" ] && [ "$isWorkWARP" = "0" ] 
 then
 	varByPass=8
 fi
@@ -1248,7 +1238,7 @@ case $varByPass in
 	manage_package "youtubeUnblock" "disable" "stop"
 	service zapret restart
 	deleteByPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 1: AWG WARP + zapret + Opera Proxy...Configured completed..."
+	messageComplete="ByPass block for Method 1: AWG WARP + zapret...Configured completed..."
 	;;
 2)
 	nameFileReplacePodkop="podkopNew"
@@ -1257,7 +1247,7 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	deleteByPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 2: AWG WARP + Opera Proxy...Configured completed..."
+	messageComplete="ByPass block for Method 2: AWG WARP...Configured completed..."
 	;;
 3)
 	nameFileReplacePodkop="podkopNewSecond"
@@ -1268,7 +1258,7 @@ case $varByPass in
 	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
 	service zapret restart
 	deleteByPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 3: zapret + Opera Proxy...Configured completed..."
+	messageComplete="ByPass block for Method 3: zapret...Configured completed..."
 	;;
 4)
 	nameFileReplacePodkop="podkopNewSecondYoutube"
@@ -1277,7 +1267,7 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "zapret" "disable" "stop"
 	deleteByPassGeoBlockComssDNS
-	messageComplete="ByPass block for Method 4: Only Opera Proxy...Configured completed..."
+	messageComplete="ByPass block configured...Configured completed..."
 	;;
 5)
 	nameFileReplacePodkop="podkopNewSecondYoutube"
@@ -1332,7 +1322,7 @@ if [ -n "$INSTALLED_VERSION" ] && [ "$INSTALLED_VERSION" != "$REQUIRED_VERSION" 
 fi
 
 if [ -f "/etc/init.d/podkop" ]; then
-	#printf "Podkop installed. Reconfigured on AWG WARP and Opera Proxy? (y/n): \n"
+	#printf "Podkop installed. Reconfigured on AWG WARP and ? (y/n): \n"
 	#is_reconfig_podkop="y"
 	#read is_reconfig_podkop
 	if [ "$is_reconfig_podkop" = "y" ] || [ "$is_reconfig_podkop" = "Y" ]; then
@@ -1349,9 +1339,9 @@ else
 	if [ "$is_install_podkop" = "y" ] || [ "$is_install_podkop" = "Y" ]; then
 		DOWNLOAD_DIR="/tmp/podkop"
 		mkdir -p "$DOWNLOAD_DIR"
-		podkop_files="podkop-v0.7.10-r1-all.ipk
-			luci-app-podkop-v0.7.10-r1-all.ipk
-			luci-i18n-podkop-ru-0.7.10.ipk"
+		podkop_files="podkop-v0.7.9-r1-all.ipk
+			luci-app-podkop-v0.7.9-r1-all.ipk
+			luci-i18n-podkop-ru-0.7.9.ipk"
 		for file in $podkop_files
 		do
 			echo "Download $file..."
