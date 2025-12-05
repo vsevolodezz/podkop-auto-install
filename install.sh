@@ -666,17 +666,16 @@ VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
 echo "Update list packages..."
 opkg update
 
-checkPackageAndInstall "coreutils-base64" "1"
+checkPackageAndInstall "coreutils-base64" "0"
 
 
 
 #проверка и установка пакетов AmneziaWG
 #install_awg_packages
 
-checkPackageAndInstall "jq" "1"
-checkPackageAndInstall "curl" "1"
-checkPackageAndInstall "unzip" "1"
-#checkPackageAndInstall "zapret" "1"
+checkPackageAndInstall "jq" "0"
+checkPackageAndInstall "curl" "0"
+checkPackageAndInstall "unzip" "0"
 opkg remove --force-removal-of-dependent-packages "sing-box"
 
 findVersion="1.12.0"
@@ -686,7 +685,7 @@ else
 	printf "\033[32;1mInstalled old sing-box-tiny or not install sing-box-tiny. Reinstall sing-box-tiny...\033[0m\n"
 	manage_package "podkop" "enable" "stop"
 	opkg remove --force-removal-of-dependent-packages "sing-box-tiny"
-	checkPackageAndInstall "sing-box-tiny" "1"
+	checkPackageAndInstall "sing-box-tiny" "0"
 fi
 
 opkg upgrade amneziawg-tools
@@ -723,9 +722,6 @@ dns-failsafe-proxy
 stubby"
 URL="https://raw.githubusercontent.com/routerich/RouterichAX3000_configs/refs/heads/podkop07"
 
-checkPackageAndInstall "luci-app-dns-failsafe-proxy" "1"
-checkPackageAndInstall "luci-i18n-stubby-ru" "1"
-checkPackageAndInstall "luci-i18n-doh-proxy-ru" "1"
 
 #проверяем установлени ли пакет https-dns-proxy
 if opkg list-installed | grep -q https-dns-proxy; then
@@ -843,11 +839,11 @@ curl -f -o /dev/null -k --connect-to ::google.com -L -H "Host: mirror.gcr.io" --
 # Проверяем код выхода
 if [ $? -eq 0 ]; then
 	printf "\033[32;1mzapret well work...\033[0m\n"
-#	cronTask="0 4 * * * service zapret restart"
-#	str=$(grep -i "0 4 \* \* \* service zapret restart" /etc/crontabs/root)
+	cronTask="0 4 * * * service zapret restart"
+	str=$(grep -i "0 4 \* \* \* service zapret restart" /etc/crontabs/root)
 	if [ -z "$str" ] 
 	then
-#		echo "Add cron task auto reboot service zapret..."
+		echo "Add cron task auto reboot service zapret..."
 		echo "$cronTask" >> /etc/crontabs/root
 	fi
 	str=$(grep -i "0 4 \* \* \* service youtubeUnblock restart" /etc/crontabs/root)
@@ -859,7 +855,7 @@ if [ $? -eq 0 ]; then
 	fi
 	isWorkZapret=1
 else
-#	manage_package "zapret" "disable" "stop"
+	manage_package "zapret" "disable" "stop"
 	printf "\033[32;1mzapret not work...\033[0m\n"
 	isWorkZapret=0
 	str=$(grep -i "0 4 \* \* \* service youtubeUnblock restart" /etc/crontabs/root)
@@ -869,16 +865,26 @@ else
 		cp -f "/etc/crontabs/temp" "/etc/crontabs/root"
 		rm -f "/etc/crontabs/temp"
 	fi
-#	str=$(grep -i "0 4 \* \* \* service zapret restart" /etc/crontabs/root)
+	str=$(grep -i "0 4 \* \* \* service zapret restart" /etc/crontabs/root)
 	if [ ! -z "$str" ]
 	then
-#		grep -v "0 4 \* \* \* service zapret restart" /etc/crontabs/root > /etc/crontabs/temp
+		grep -v "0 4 \* \* \* service zapret restart" /etc/crontabs/root > /etc/crontabs/temp
 		cp -f "/etc/crontabs/temp" "/etc/crontabs/root"
 		rm -f "/etc/crontabs/temp"
 	fi
 fi
 
-
+isWorkOperaProxy=0
+printf "\033[32;1mCheck opera proxy...\033[0m\n"
+service sing-box restart
+curl --proxy http://127.0.0.1:18080 ipinfo.io/ip
+if [ $? -eq 0 ]; then
+	printf "\033[32;1mOpera proxy well work...\033[0m\n"
+	isWorkOperaProxy=1
+else
+	printf "\033[32;1mOpera proxy not work...\033[0m\n"
+	isWorkOperaProxy=0
+fi
 
 #printf "\033[32;1mAutomatic generate config AmneziaWG WARP (n) or manual input parameters for AmneziaWG (y)...\033[0m\n"
 countRepeatAWGGen=2
@@ -1242,10 +1248,10 @@ case $varByPass in
 	;;
 2)
 	nameFileReplacePodkop="podkopNew"
-#	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
+	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "ruantiblock" "disable" "stop"
-#	manage_package "zapret" "disable" "stop"
+	manage_package "zapret" "disable" "stop"
 	deleteByPassGeoBlockComssDNS
 	messageComplete="ByPass block for Method 2: AWG WARP...Configured completed..."
 	;;
@@ -1254,18 +1260,18 @@ case $varByPass in
 	printf  "\033[32;1mStop and disabled service 'ruantiblock' and youtubeUnblock ...\033[0m\n"
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "youtubeUnblock" "disable" "stop"
-#	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
-#	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
+	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
+	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
 #	service zapret restart
 	deleteByPassGeoBlockComssDNS
 	messageComplete="ByPass block for Method 3: zapret...Configured completed..."
 	;;
 4)
 	nameFileReplacePodkop="podkopNewSecondYoutube"
-#	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
+	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "ruantiblock" "disable" "stop"
-#	manage_package "zapret" "disable" "stop"
+	manage_package "zapret" "disable" "stop"
 	deleteByPassGeoBlockComssDNS
 	messageComplete="ByPass block for Method 4: Only ...Configured completed..."
 	;;
@@ -1275,9 +1281,9 @@ case $varByPass in
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "podkop" "disable" "stop"
 	manage_package "youtubeunblock" "disable" "stop"
-#	wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user-second.txt"
-#	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
-#	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
+	wget -O "/opt/zapret/ipset/zapret-hosts-user.txt" "$URL/config_files/zapret-hosts-user-second.txt"
+	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
+	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
 #	service zapret restart
 	byPassGeoBlockComssDNS
 	printf "\033[32;1mByPass block for Method 5: zapret + ComssDNS for GeoBlock...Configured completed...\033[0m\n"
@@ -1285,10 +1291,10 @@ case $varByPass in
 	;;
 6)
 	nameFileReplacePodkop="podkopNewWARP"
-#	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
+	printf  "\033[32;1mStop and disabled service 'youtubeUnblock' and 'ruantiblock' and 'zapret'...\033[0m\n"
 	manage_package "youtubeUnblock" "disable" "stop"
 	manage_package "ruantiblock" "disable" "stop"
-#	manage_package "zapret" "disable" "stop"
+	manage_package "zapret" "disable" "stop"
 	byPassGeoBlockComssDNS
 	messageComplete="ByPass block for Method 6: AWG WARP + ComssDNS for GeoBlock...Configured completed..."
 	;;
@@ -1297,8 +1303,8 @@ case $varByPass in
 	printf  "\033[32;1mStop and disabled service 'ruantiblock' and 'youtubeUnblock'...\033[0m\n"
 	manage_package "ruantiblock" "disable" "stop"
 	manage_package "youtubeUnblock" "disable" "stop"
-#	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
-#	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
+	wget -O "/opt/zapret/init.d/openwrt/custom.d/50-discord-media" "$URL/config_files/50-discord-media"
+	chmod +x "/opt/zapret/init.d/openwrt/custom.d/50-discord-media"
 #	service zapret restart
 	byPassGeoBlockComssDNS
 	messageComplete="ByPass block for Method 7: AWG WARP + zapret + ComssDNS for GeoBlock...Configured completed..."
@@ -1359,10 +1365,10 @@ fi
 printf  "\033[32;1mStart and enable service 'doh-proxy'...\033[0m\n"
 manage_package "doh-proxy" "enable" "start"
 
-#str=$(grep -i "0 4 \* \* \* wget -O - $URL/configure_zaprets.sh | sh" /etc/crontabs/root)
+str=$(grep -i "0 4 \* \* \* wget -O - $URL/configure_zaprets.sh | sh" /etc/crontabs/root)
 if [ ! -z "$str" ]
 then
-#	grep -v "0 4 \* \* \* wget -O - $URL/configure_zaprets.sh | sh" /etc/crontabs/root > /etc/crontabs/temp
+	grep -v "0 4 \* \* \* wget -O - $URL/configure_zaprets.sh | sh" /etc/crontabs/root > /etc/crontabs/temp
 	cp -f "/etc/crontabs/temp" "/etc/crontabs/root"
 	rm -f "/etc/crontabs/temp"
 fi
