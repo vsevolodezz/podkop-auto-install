@@ -20,126 +20,61 @@ error() {
 
 # ============ INSTALL AWG PACKAGES (FIXED) ============
 install_awg_packages() {
-    # Получение pkgarch с наибольшим приоритетом
     PKGARCH=$(opkg print-architecture | awk 'BEGIN {max=0} {if ($3 > max) {max = $3; arch = $2}} END {print arch}')
-
     TARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 1)
     SUBTARGET=$(ubus call system board | jsonfilter -e '@.release.target' | cut -d '/' -f 2)
     VERSION=$(ubus call system board | jsonfilter -e '@.release.version')
     
-    # ИСПРАВЛЕНИЕ: Маппинг версии OpenWrt на доступный релиз AWG
-    echo "Detected OpenWrt version: $VERSION"
+    echo "Detected: OpenWrt $VERSION, Arch: $PKGARCH, Target: $TARGET/$SUBTARGET"
     
-    case "$VERSION" in
-        24.10.4*)
-            AWG_VERSION="24.10.3"
-            echo "Using AWG packages from v24.10.3 (latest available for 24.10.x)"
-            ;;
-        24.10.3*)
-            AWG_VERSION="24.10.3"
-            ;;
-        24.10.2*)
-            AWG_VERSION="24.10.2"
-            ;;
-        24.10.1*)
-            AWG_VERSION="24.10.1"
-            ;;
-        24.10.0*)
-            AWG_VERSION="24.10.0"
-            ;;
-        23.05*)
-            AWG_VERSION="23.05.5"
-            ;;
-        *)
-            echo "Error: Unsupported OpenWrt version: $VERSION"
-            exit 1
-            ;;
-    esac
-    
-    # Используем AWG_VERSION вместо VERSION
+    # Для 24.10.4+ используем v24.10.4
+    AWG_VERSION="$VERSION"
     PKGPOSTFIX="_v${AWG_VERSION}_${PKGARCH}_${TARGET}_${SUBTARGET}.ipk"
-    BASE_URL="https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/"
-
+    BASE_URL="https://github.com/Slava-Shchipunov/awg-openwrt/releases/download/v${AWG_VERSION}/"
+    
     AWG_DIR="/tmp/amneziawg"
     mkdir -p "$AWG_DIR"
     
+    # 1. Install kmod-amneziawg
     if opkg list-installed | grep -q kmod-amneziawg; then
-        echo "kmod-amneziawg already installed"
+        echo "✓ kmod-amneziawg already installed"
     else
-        KMOD_AMNEZIAWG_FILENAME="kmod-amneziawg${PKGPOSTFIX}"
-        DOWNLOAD_URL="${BASE_URL}v${AWG_VERSION}/${KMOD_AMNEZIAWG_FILENAME}"
-        echo "Downloading: $DOWNLOAD_URL"
-        wget -O "$AWG_DIR/$KMOD_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
-
-        if [ $? -eq 0 ]; then
-            echo "kmod-amneziawg file downloaded successfully"
-        else
-            echo "Error downloading kmod-amneziawg"
-            exit 1
-        fi
-        
-        opkg install "$AWG_DIR/$KMOD_AMNEZIAWG_FILENAME"
-
-        if [ $? -eq 0 ]; then
-            echo "kmod-amneziawg installed successfully"
-        else
-            echo "Error installing kmod-amneziawg"
-            exit 1
-        fi
+        FILENAME="kmod-amneziawg${PKGPOSTFIX}"
+        URL="${BASE_URL}${FILENAME}"
+        echo "Downloading: $URL"
+        wget -O "$AWG_DIR/$FILENAME" "$URL" || { echo "Error downloading"; exit 1; }
+        opkg install "$AWG_DIR/$FILENAME" || { echo "Error installing"; exit 1; }
+        echo "✓ kmod-amneziawg installed"
     fi
 
+    # 2. Install amneziawg-tools
     if opkg list-installed | grep -q amneziawg-tools; then
-        echo "amneziawg-tools already installed"
+        echo "✓ amneziawg-tools already installed"
     else
-        AMNEZIAWG_TOOLS_FILENAME="amneziawg-tools${PKGPOSTFIX}"
-        DOWNLOAD_URL="${BASE_URL}v${AWG_VERSION}/${AMNEZIAWG_TOOLS_FILENAME}"
-        echo "Downloading: $DOWNLOAD_URL"
-        wget -O "$AWG_DIR/$AMNEZIAWG_TOOLS_FILENAME" "$DOWNLOAD_URL"
-
-        if [ $? -eq 0 ]; then
-            echo "amneziawg-tools file downloaded successfully"
-        else
-            echo "Error downloading amneziawg-tools"
-            exit 1
-        fi
-
-        opkg install "$AWG_DIR/$AMNEZIAWG_TOOLS_FILENAME"
-
-        if [ $? -eq 0 ]; then
-            echo "amneziawg-tools installed successfully"
-        else
-            echo "Error installing amneziawg-tools"
-            exit 1
-        fi
+        FILENAME="amneziawg-tools${PKGPOSTFIX}"
+        URL="${BASE_URL}${FILENAME}"
+        echo "Downloading: $URL"
+        wget -O "$AWG_DIR/$FILENAME" "$URL" || { echo "Error downloading"; exit 1; }
+        opkg install "$AWG_DIR/$FILENAME" || { echo "Error installing"; exit 1; }
+        echo "✓ amneziawg-tools installed"
     fi
     
-    if opkg list-installed | grep -q luci-app-amneziawg; then
-        echo "luci-app-amneziawg already installed"
+    # 3. Install luci-proto-amneziawg (НЕ luci-app!)
+    if opkg list-installed | grep -q luci-proto-amneziawg; then
+        echo "✓ luci-proto-amneziawg already installed"
     else
-        LUCI_APP_AMNEZIAWG_FILENAME="luci-app-amneziawg${PKGPOSTFIX}"
-        DOWNLOAD_URL="${BASE_URL}v${AWG_VERSION}/${LUCI_APP_AMNEZIAWG_FILENAME}"
-        echo "Downloading: $DOWNLOAD_URL"
-        wget -O "$AWG_DIR/$LUCI_APP_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
-
-        if [ $? -eq 0 ]; then
-            echo "luci-app-amneziawg file downloaded successfully"
-        else
-            echo "Error downloading luci-app-amneziawg"
-            exit 1
-        fi
-
-        opkg install "$AWG_DIR/$LUCI_APP_AMNEZIAWG_FILENAME"
-
-        if [ $? -eq 0 ]; then
-            echo "luci-app-amneziawg installed successfully"
-        else
-            echo "Error installing luci-app-amneziawg"
-            exit 1
-        fi
+        FILENAME="luci-proto-amneziawg${PKGPOSTFIX}"
+        URL="${BASE_URL}${FILENAME}"
+        echo "Downloading: $URL"
+        wget -O "$AWG_DIR/$FILENAME" "$URL" || { echo "Error downloading"; exit 1; }
+        opkg install "$AWG_DIR/$FILENAME" || { echo "Error installing"; exit 1; }
+        echo "✓ luci-proto-amneziawg installed"
     fi
 
     rm -rf "$AWG_DIR"
+    echo "✓✓✓ All AmneziaWG packages installed ✓✓✓"
 }
+
 
 # ============ WARP CONFIG GENERATOR ============
 requestConfWARP1() {
